@@ -183,6 +183,22 @@ input {
   margin: 0;
 }
 
+.cta-header__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.button--secondary {
+  border: 1px solid var(--brand-dark-red);
+  background: white;
+  color: var(--brand-dark-red);
+}
+
+.button--secondary:hover {
+  background: var(--soft-red);
+  color: var(--brand-dark-red);
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -928,6 +944,14 @@ input {
   vertical-align: -2px;
 }
 
+.job-save-button__heart[data-favorited="true"] {
+  filter: invert(14%) sepia(96%) saturate(4491%) hue-rotate(350deg) brightness(88%) contrast(105%);
+}
+
+.job-save-button__heart[data-favorited="true"] {
+  filter: invert(14%) sepia(96%) saturate(4491%) hue-rotate(350deg) brightness(88%) contrast(105%);
+}
+
 .jobs-pagination {
   display: flex;
   width: min(495px, 100%);
@@ -1108,6 +1132,174 @@ input {
   font-size: 11px;
 }
 
+.login-intro__link,
+.login-mode-button {
+  border: 0;
+  background: transparent;
+  color: var(--brand-red);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.register-fields {
+  display: grid;
+  gap: 7px;
+}
+
+.register-field {
+  display: grid;
+  gap: 5px;
+}
+
+.field-error {
+  color: var(--brand-red);
+  font-size: 10px;
+}
+
+.login-form-section--register {
+  padding-bottom: 90px;
+}
+
+.my-page {
+  min-height: 900px;
+  background: white;
+}
+
+.my-page__intro {
+  min-height: 225px;
+  padding: 30px 0 24px;
+  background: var(--soft-red);
+  text-align: center;
+}
+
+.my-page__intro h1 {
+  margin: 0 0 20px;
+  font-size: 25px;
+  font-weight: 400;
+}
+
+.my-page__intro p {
+  margin: 0 auto 28px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.my-page__links {
+  display: flex;
+  justify-content: flex-end;
+  gap: 24px;
+}
+
+.my-page__links a {
+  color: var(--brand-red);
+  font-size: 10px;
+  text-decoration: underline;
+}
+
+.my-page__content {
+  min-height: 590px;
+  padding-top: 28px;
+  padding-bottom: 80px;
+}
+
+.my-page__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(100%, 398px);
+  height: 40px;
+  margin: 0 auto 28px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+}
+
+.my-page__tabs button {
+  border: 0;
+  background: var(--soft-red);
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.my-page__tabs button.is-active {
+  background: var(--brand-red);
+  color: white;
+}
+
+.my-jobs-list {
+  display: grid;
+  gap: 16px;
+}
+
+.my-job-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  min-height: 96px;
+  gap: 24px;
+  padding: 20px 30px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+}
+
+.my-job-card__meta,
+.my-job-card__side p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.my-job-card h3 {
+  margin: 7px 0 8px;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.my-job-card__main > p:last-child {
+  max-width: 650px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.my-job-card__side {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.my-job-card__side strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.my-job-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.my-job-card__actions button {
+  min-width: 58px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--brand-red);
+  color: white;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.my-job-card__actions button.is-light {
+  border: 1px solid var(--line);
+  background: var(--soft-red);
+  color: var(--foreground);
+}
+
 @media (max-width: 760px) {
   .layout-container,
   .site-nav__brand-row,
@@ -1186,6 +1378,14 @@ input {
     align-items: stretch;
     flex-direction: column;
     padding: 17px 0;
+  }
+
+  .cta-header__actions {
+    width: 100%;
+  }
+
+  .cta-header__actions .button {
+    flex: 1;
   }
 
   .button--small {
@@ -1275,6 +1475,19 @@ input {
 
   .login-form-container {
     width: min(100% - 48px, 368px);
+  }
+
+  .my-page__links {
+    justify-content: center;
+  }
+
+  .my-job-card {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .my-job-card__side {
+    gap: 6px;
   }
 
   .filter-row {

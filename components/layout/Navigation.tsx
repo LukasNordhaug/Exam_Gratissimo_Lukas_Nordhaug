@@ -19,12 +19,11 @@ export function Navigation() {
   const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    const checkAuth = window.setTimeout(
-      () => setAuthenticated(isAuthenticated()),
-      0,
-    );
-    return () => window.clearTimeout(checkAuth);
-  }, []);
+    const checkAuth = () => setAuthenticated(isAuthenticated());
+    checkAuth();
+    window.addEventListener("auth-change", checkAuth);
+    return () => window.removeEventListener("auth-change", checkAuth);
+  }, [pathname]);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -99,9 +98,15 @@ export function Navigation() {
                   </button>
                 </>
               ) : (
-                <Link href="/login" onClick={() => setMenuOpen(false)}>
-                  Opret Profil&nbsp; | &nbsp;Log ind
-                </Link>
+                <>
+                  <Link href="/register" onClick={() => setMenuOpen(false)}>
+                    Opret profil
+                  </Link>
+                  <span className="site-nav__separator">|</span>
+                  <Link href="/login" onClick={() => setMenuOpen(false)}>
+                    Log ind
+                  </Link>
+                </>
               )}
             </div>
           </div>

@@ -7,9 +7,11 @@ import { useEffect, useState } from "react";
 import { JobSearch, Option } from "@/components/home/JobSearch";
 import {
   ApiError,
+  deleteFavorite,
   getJobCategories,
   getJobListings,
   getRegions,
+  getFavorites,
   getWorkTypes,
   isAuthenticated,
   saveFavorite,
@@ -78,6 +80,12 @@ export function JobsResults() {
   const [openJob, setOpenJob] = useState<RecordValue | null>(null);
   const [favoriteMessage, setFavoriteMessage] = useState("");
   const [savingFavorite, setSavingFavorite] = useState<number | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<Map<number, number>>(
+    new Map(),
+  );
+  const [pendingFavoriteIds, setPendingFavoriteIds] = useState<Set<number>>(
+    new Set(),
+  );
 
   useEffect(() => {
     let active = true;
@@ -118,6 +126,36 @@ export function JobsResults() {
       }
     };
     void loadData();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+    let active = true;
+    getFavorites()
+      .then((items) => {
+        if (!active) return;
+        const ids = items.reduce<Map<number, number>>((result, item) => {
+          if (!item || typeof item !== "object") return result;
+          const favorite = item as RecordValue;
+          const job = related(favorite, "jobListing");
+          const id = idOf(job?.id ?? favorite.jobListingId);
+          const favoriteId = idOf(favorite.id);
+          if (
+            Number.isInteger(id) &&
+            id > 0 &&
+            Number.isInteger(favoriteId) &&
+            favoriteId > 0
+          ) {
+            result.set(id, favoriteId);
+          }
+          return result;
+        }, new Map<number, number>());
+        setFavoriteIds(ids);
+      })
+      .catch(() => undefined);
     return () => {
       active = false;
     };
@@ -173,10 +211,53 @@ export function JobsResults() {
       return;
     }
     setSavingFavorite(jobId);
+    const existingFavoriteId = favoriteIds.get(jobId);
+    const wasFavorite = Boolean(existingFavoriteId);
     try {
-      await saveFavorite(jobId);
-      setFavoriteMessage("Annoncen er gemt på din profil.");
+      if (existingFavoriteId) {
+        setFavoriteIds((current) => {
+          const next = new Map(current);
+          next.delete(jobId);
+          return next;
+        });
+        setPendingFavoriteIds((current) => {
+          const next = new Set(current);
+          next.delete(jobId);
+          return next;
+        });
+        await deleteFavorite(existingFavoriteId);
+        setFavoriteIds((current) => {
+          const next = new Map(current);
+          next.delete(jobId);
+          return next;
+        });
+        setFavoriteMessage("Annoncen er fjernet fra dine favoritter.");
+      } else {
+        setPendingFavoriteIds((current) => new Set(current).add(jobId));
+        const favorite = (await saveFavorite(jobId)) as RecordValue;
+        const favoriteId = idOf(favorite.id);
+        setPendingFavoriteIds((current) => {
+          const next = new Set(current);
+          next.delete(jobId);
+          return next;
+        });
+        if (Number.isInteger(favoriteId) && favoriteId > 0) {
+          setFavoriteIds((current) => new Map(current).set(jobId, favoriteId));
+        }
+        setFavoriteMessage("Annoncen er gemt på din profil.");
+      }
     } catch (cause) {
+      if (wasFavorite && existingFavoriteId) {
+        setFavoriteIds((current) =>
+          new Map(current).set(jobId, existingFavoriteId),
+        );
+      } else {
+        setPendingFavoriteIds((current) => {
+          const next = new Set(current);
+          next.delete(jobId);
+          return next;
+        });
+      }
       setFavoriteMessage(
         cause instanceof ApiError
           ? cause.message
@@ -224,7 +305,7 @@ export function JobsResults() {
         ) : (
           <div className="jobs-list">
             {visibleJobs.map((job) => {
-              const jobId = idOf(job.id);
+              const jobId = idOf(job.id ?? job.jobListingId);
               const region = related(job, "region");
               const workType = related(job, "workType");
               return (
@@ -278,18 +359,17 @@ export function JobsResults() {
                       <div className="job-result-card__contact">
                         <h4>Kontakt</h4>
                         <p>
-                          {text(
-                            job.contactName,
-                            text(job.organization, "Organisation"),
-                          )}
+                          {text(related(job, "user")?.firstname)}{" "}
+                          {text(related(job, "user")?.lastname)}
                         </p>
                         <p>
-                          {text(
-                            job.contactPhone,
-                            "Kontaktoplysninger findes hos organisationen",
-                          )}
+                          Telefon:{" "}
+                          {text(related(job, "user")?.phone, "Ikke oplyst")}
                         </p>
-                        <p>{text(job.contactEmail, "")}</p>
+                        <p>
+                          Email:{" "}
+                          {text(related(job, "user")?.email, "Ikke oplyst")}
+                        </p>
                       </div>
                     )}
                     <div className="job-result-card__actions">
@@ -303,9 +383,16 @@ export function JobsResults() {
                           "Gemmer..."
                         ) : (
                           <>
-                            Gem{" "}
+                            {favoriteIds.has(jobId) ||
+                            pendingFavoriteIds.has(jobId)
+                              ? "Fjern"
+                              : "Gem"}{" "}
                             <Image
                               className="job-save-button__heart"
+                              data-favorited={
+                                favoriteIds.has(jobId) ||
+                                pendingFavoriteIds.has(jobId)
+                              }
                               src="/icons/icons8-favorite-50.png"
                               alt=""
                               width={14}
