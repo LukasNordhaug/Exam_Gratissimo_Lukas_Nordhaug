@@ -1,0 +1,6 @@
+model Testimony {
+  id          Int          @id @default(autoincrement())
+  name        String       
+  title       String
+  content     String
+}

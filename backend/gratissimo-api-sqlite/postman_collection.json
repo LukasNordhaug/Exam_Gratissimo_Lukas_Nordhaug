@@ -1,0 +1,1496 @@
+{
+  "info": {
+    "name": "Gratissimo API",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Fuld CRUD-dokumentation for alle modeller samt auth-endpoints.\n\nBase URL: {{baseUrl}} (standard: http://localhost:3000).\n\nBeskyttede ruter kræver headeren:\n  Authorization: Bearer {{accessToken}}\n\nWorkflow:\n1. Kald POST /api/login for at få accessToken og refreshToken.\n2. Gem accessToken i collection-variablen 'accessToken'.\n3. Brug refreshToken via POST /api/refresh for at forny accessToken.\n4. Afslut sessionen med POST /api/logout."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Serverens rod-URL. Skift til produktions-URL ved deploy."
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string",
+      "description": "JWT access token modtaget fra POST /api/login. Indsæt værdien her efter login."
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Endpoints til login, token-fornyelse og logout. Login returnerer et kortlivet accessToken og et langtlivet refreshToken.",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "bruger@eksempel.dk",
+                  "type": "text",
+                  "description": "Brugerens e-mailadresse (bruges som brugernavn)"
+                },
+                {
+                  "key": "password",
+                  "value": "MinAdgangskode123",
+                  "type": "text",
+                  "description": "Brugerens adgangskode (plain text sendes til bcrypt-sammenligning)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Autentificerer en bruger med e-mail og adgangskode. Returnerer et accessToken (kortlivet JWT), et refreshToken (langtlivet JWT) samt brugerens id, fornavn og efternavn. refreshToken gemmes i databasen på bruger-rækken."
+          }
+        },
+        {
+          "name": "Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "refreshToken",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "type": "text",
+                  "description": "Det refreshToken modtaget fra /api/login eller et tidligere /api/refresh kald"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "refresh"]
+            },
+            "description": "Fornyer accessToken ved hjælp af et gyldigt refreshToken. Roterer samtidig refreshToken (udsteder et nyt) for øget sikkerhed. Returnerer nyt accessToken og nyt refreshToken."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "refreshToken",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "type": "text",
+                  "description": "Det aktive refreshToken der skal invalideres. Sætter feltet til null i databasen."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "logout"]
+            },
+            "description": "Logger brugeren ud ved at slette refreshToken i databasen. Returnerer 204 No Content. AccessToken er stadig gyldigt indtil det udløber (håndteres klient-side)."
+          }
+        },
+        {
+          "name": "Verify Token (få bruger-id)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Gyldigt JWT access token"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "verify"]
+            },
+            "description": "Verificerer at accessToken er gyldigt og returnerer det tilknyttede bruger-id. Bruges typisk til at tjekke om en session stadig er aktiv. Kræver Bearer-token i Authorization-header."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "CRUD for brugere. Oprettelse (POST) er åben – bruges til registrering. Alle øvrige endpoints kræver Bearer-token.",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Henter alle brugere i systemet. Returnerer en array med alle bruger-objekter inkl. adgangskode-hash og refreshToken. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            },
+            "description": "Henter én bruger baseret på ID i URL-parameteren. Returnerer 404 hvis brugeren ikke findes. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Create User (Registrering)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "firstname",
+                  "value": "Anders",
+                  "type": "text",
+                  "description": "Brugerens fornavn"
+                },
+                {
+                  "key": "lastname",
+                  "value": "Andersen",
+                  "type": "text",
+                  "description": "Brugerens efternavn"
+                },
+                {
+                  "key": "email",
+                  "value": "anders@eksempel.dk",
+                  "type": "text",
+                  "description": "Unik e-mailadresse – bruges som login-brugernavn"
+                },
+                {
+                  "key": "password",
+                  "value": "MinAdgangskode123",
+                  "type": "text",
+                  "description": "Adgangskode i plain text (bør hashes i controlleren inden lagring)"
+                },
+                {
+                  "key": "phone",
+                  "value": "12345678",
+                  "type": "text",
+                  "description": "Telefonnummer (valgfrit, gemmes som heltal)"
+                },
+                {
+                  "key": "address",
+                  "value": "Strandvejen 42",
+                  "type": "text",
+                  "description": "Vejadresse (valgfrit)"
+                },
+                {
+                  "key": "city",
+                  "value": "Aarhus",
+                  "type": "text",
+                  "description": "By (valgfrit)"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "8000",
+                  "type": "text",
+                  "description": "Postnummer (valgfrit, gemmes som heltal)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Opretter en ny bruger (registrering). Kræver IKKE Bearer-token. Returnerer den oprettede bruger med auto-genereret id. E-mail skal være unik."
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "firstname",
+                  "value": "Anders",
+                  "type": "text",
+                  "description": "Opdateret fornavn"
+                },
+                {
+                  "key": "lastname",
+                  "value": "Andersen",
+                  "type": "text",
+                  "description": "Opdateret efternavn"
+                },
+                {
+                  "key": "email",
+                  "value": "anders@eksempel.dk",
+                  "type": "text",
+                  "description": "Opdateret e-mail (skal forblive unik)"
+                },
+                {
+                  "key": "password",
+                  "value": "NyAdgangskode456",
+                  "type": "text",
+                  "description": "Opdateret adgangskode"
+                },
+                {
+                  "key": "phone",
+                  "value": "87654321",
+                  "type": "text",
+                  "description": "Opdateret telefonnummer (valgfrit)"
+                },
+                {
+                  "key": "address",
+                  "value": "Nørregade 10",
+                  "type": "text",
+                  "description": "Opdateret adresse (valgfrit)"
+                },
+                {
+                  "key": "city",
+                  "value": "København",
+                  "type": "text",
+                  "description": "Opdateret by (valgfrit)"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "1100",
+                  "type": "text",
+                  "description": "Opdateret postnummer (valgfrit)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            },
+            "description": "Opdaterer en eksisterende bruger identificeret ved ID i URL. Returnerer 404 hvis brugeren ikke eksisterer. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            },
+            "description": "Sletter en bruger permanent baseret på ID i URL. Returnerer 204 No Content ved succes, 404 hvis brugeren ikke findes. Kræver Bearer-token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Organisations",
+      "description": "CRUD for organisationer/virksomheder. GET-endpoints er åbne. POST/PUT/DELETE kræver Bearer-token.",
+      "item": [
+        {
+          "name": "Get All Organisations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations"]
+            },
+            "description": "Henter alle organisationer. Åbent endpoint – kræver ingen autentificering. Returnerer array af alle organisationer."
+          }
+        },
+        {
+          "name": "Get Organisation By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "1"]
+            },
+            "description": "Henter én organisation via ID i URL. Returnerer 404 hvis ikke fundet. Åbent endpoint."
+          }
+        },
+        {
+          "name": "Create Organisation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "Gratissimo ApS",
+                  "type": "text",
+                  "description": "Organisationens navn (påkrævet)"
+                },
+                {
+                  "key": "description",
+                  "value": "En ledende virksomhed inden for gratis jobopslag i Danmark.",
+                  "type": "text",
+                  "description": "Kort beskrivelse af organisationen (valgfrit)"
+                },
+                {
+                  "key": "address",
+                  "value": "Innovationsvej 7",
+                  "type": "text",
+                  "description": "Organisationens adresse (valgfrit)"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "8000",
+                  "type": "text",
+                  "description": "Postnummer (valgfrit)"
+                },
+                {
+                  "key": "city",
+                  "value": "Aarhus",
+                  "type": "text",
+                  "description": "By (valgfrit)"
+                },
+                {
+                  "key": "phone",
+                  "value": "70123456",
+                  "type": "text",
+                  "description": "Telefonnummer (valgfrit)"
+                },
+                {
+                  "key": "userId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "ID på den bruger der ejer/oprettede organisationen (påkrævet)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations"]
+            },
+            "description": "Opretter en ny organisation. userId skal referere til en eksisterende bruger. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Update Organisation",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "Gratissimo A/S",
+                  "type": "text",
+                  "description": "Opdateret navn"
+                },
+                {
+                  "key": "description",
+                  "value": "Opdateret beskrivelse af virksomheden.",
+                  "type": "text",
+                  "description": "Opdateret beskrivelse (valgfrit)"
+                },
+                {
+                  "key": "address",
+                  "value": "Teknologiparken 3",
+                  "type": "text",
+                  "description": "Opdateret adresse (valgfrit)"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "9000",
+                  "type": "text",
+                  "description": "Opdateret postnummer (valgfrit)"
+                },
+                {
+                  "key": "city",
+                  "value": "Aalborg",
+                  "type": "text",
+                  "description": "Opdateret by (valgfrit)"
+                },
+                {
+                  "key": "phone",
+                  "value": "98765432",
+                  "type": "text",
+                  "description": "Opdateret telefon (valgfrit)"
+                },
+                {
+                  "key": "userId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "ID på ejerbrug (påkrævet)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "1"]
+            },
+            "description": "Opdaterer en eksisterende organisation via ID i URL. Returnerer 404 hvis ikke fundet. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Delete Organisation",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "1"]
+            },
+            "description": "Sletter en organisation permanent. Returnerer 204 ved succes. Kræver Bearer-token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Job Categories",
+      "description": "CRUD for jobkategorier (f.eks. IT, Økonomi, Håndværk). GET-endpoints er åbne. POST/PUT/DELETE kræver Bearer-token.",
+      "item": [
+        {
+          "name": "Get All Job Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-categories"]
+            },
+            "description": "Henter alle jobkategorier. Åbent endpoint."
+          }
+        },
+        {
+          "name": "Get Job Category By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-categories/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-categories", "1"]
+            },
+            "description": "Henter én jobkategori via ID i URL. Returnerer 404 hvis ikke fundet."
+          }
+        },
+        {
+          "name": "Create Job Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "IT & Teknologi",
+                  "type": "text",
+                  "description": "Navn på jobkategorien (valgfrit felt ifølge model)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-categories"]
+            },
+            "description": "Opretter en ny jobkategori. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Update Job Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "Økonomi & Finans",
+                  "type": "text",
+                  "description": "Opdateret navn på jobkategorien"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-categories/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-categories", "1"]
+            },
+            "description": "Opdaterer en eksisterende jobkategori via ID i URL. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Delete Job Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-categories/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-categories", "1"]
+            },
+            "description": "Sletter en jobkategori permanent. Returnerer 204 ved succes. Kræver Bearer-token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Job Listings",
+      "description": "CRUD for jobopslag. GET-endpoints er åbne og returnerer opslaget med tilknyttet region og arbejdstype. POST bruger stien /api/jobs (ikke /api/job-listings). PUT/DELETE bruger /api/job-listings/:id.",
+      "item": [
+        {
+          "name": "Get All Job Listings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-listings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-listings"]
+            },
+            "description": "Henter alle jobopslag inkl. tilknyttet region og workType (via include). Åbent endpoint."
+          }
+        },
+        {
+          "name": "Get Job Listing By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-listings/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-listings", "1"]
+            },
+            "description": "Henter ét jobopslag via ID inkl. region og workType. Returnerer 404 hvis ikke fundet. Åbent endpoint."
+          }
+        },
+        {
+          "name": "Create Job Listing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "Frontend Udvikler",
+                  "type": "text",
+                  "description": "Stillingsbetegnelse (påkrævet)"
+                },
+                {
+                  "key": "description",
+                  "value": "Vi søger en erfaren frontend-udvikler med solid React-erfaring til vores produktteam.",
+                  "type": "text",
+                  "description": "Beskrivelse af jobbet (påkrævet)"
+                },
+                {
+                  "key": "address",
+                  "value": "Åboulevarden 15",
+                  "type": "text",
+                  "description": "Arbejdsstedets adresse (valgfrit)"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "8000",
+                  "type": "text",
+                  "description": "Postnummer for arbejdsstedet (valgfrit)"
+                },
+                {
+                  "key": "city",
+                  "value": "Aarhus C",
+                  "type": "text",
+                  "description": "By for arbejdsstedet (valgfrit)"
+                },
+                {
+                  "key": "workHome",
+                  "value": "Delvist",
+                  "type": "text",
+                  "description": "Hjemmearbejde-mulighed: 'Hjemmearbejde', 'On-site' eller 'Delvist' (valgfrit)"
+                },
+                {
+                  "key": "regionId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "ID på den region jobbet er i (påkrævet, fremmed nøgle)"
+                },
+                {
+                  "key": "userId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "ID på den bruger der opretter opslaget (påkrævet, fremmed nøgle)"
+                },
+                {
+                  "key": "jobCategoryId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "ID på jobkategorien (påkrævet, fremmed nøgle)"
+                },
+                {
+                  "key": "organisationId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "ID på den organisation der slår jobbet op (påkrævet, fremmed nøgle)"
+                },
+                {
+                  "key": "workTypeId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "ID på arbejdstypen, f.eks. Fuldtid (påkrævet, fremmed nøgle)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jobs"]
+            },
+            "description": "Opretter et nyt jobopslag. OBS: Ruten er POST /api/jobs (ikke /api/job-listings). Alle fremmednøgle-ID'er skal eksistere i databasen. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Update Job Listing",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "Senior Frontend Udvikler",
+                  "type": "text",
+                  "description": "Opdateret stillingsbetegnelse"
+                },
+                {
+                  "key": "description",
+                  "value": "Opdateret jobbeskrivelse med fokus på TypeScript og Next.js.",
+                  "type": "text",
+                  "description": "Opdateret beskrivelse"
+                },
+                {
+                  "key": "address",
+                  "value": "Åboulevarden 15",
+                  "type": "text",
+                  "description": "Adresse (valgfrit)"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "8000",
+                  "type": "text",
+                  "description": "Postnummer (valgfrit)"
+                },
+                {
+                  "key": "city",
+                  "value": "Aarhus C",
+                  "type": "text",
+                  "description": "By (valgfrit)"
+                },
+                {
+                  "key": "workHome",
+                  "value": "Hjemmearbejde",
+                  "type": "text",
+                  "description": "Opdateret hjemmearbejde-mulighed (valgfrit)"
+                },
+                {
+                  "key": "regionId",
+                  "value": "2",
+                  "type": "text",
+                  "description": "Opdateret regions-ID"
+                },
+                {
+                  "key": "userId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "Bruger-ID"
+                },
+                {
+                  "key": "jobCategoryId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "Jobkategori-ID"
+                },
+                {
+                  "key": "organisationId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "Organisations-ID"
+                },
+                {
+                  "key": "workTypeId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "Arbejdstype-ID"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-listings/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-listings", "1"]
+            },
+            "description": "Opdaterer et eksisterende jobopslag via ID i URL. Returnerer 404 hvis ikke fundet. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Delete Job Listing",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/job-listings/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job-listings", "1"]
+            },
+            "description": "Sletter et jobopslag permanent. Returnerer 204 ved succes. Kræver Bearer-token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Work Types",
+      "description": "CRUD for arbejdstyper (f.eks. Fuldtid, Deltid, Flex). OBS: workTypeRoutes er ikke registreret i index.ts endnu – tilføj app.use('/api', workTypeRoutes) for at aktivere disse endpoints.",
+      "item": [
+        {
+          "name": "Get All Work Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/workTypes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workTypes"]
+            },
+            "description": "Henter alle arbejdstyper. Åbent endpoint."
+          }
+        },
+        {
+          "name": "Get Work Type By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/workTypes/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workTypes", "1"]
+            },
+            "description": "Henter én arbejdstype via ID. Åbent endpoint."
+          }
+        },
+        {
+          "name": "Create Work Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "type",
+                  "value": "Fuldtid",
+                  "type": "text",
+                  "description": "Navn på arbejdstypen – skal være unik. F.eks.: Fuldtid, Deltid, Flex"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workTypes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workTypes"]
+            },
+            "description": "Opretter en ny arbejdstype. Feltet 'type' skal være unikt. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Update Work Type",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "type",
+                  "value": "Deltid",
+                  "type": "text",
+                  "description": "Opdateret navn på arbejdstypen"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workTypes/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workTypes", "1"]
+            },
+            "description": "Opdaterer en arbejdstype via ID i URL. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Delete Work Type",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/workTypes/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workTypes", "1"]
+            },
+            "description": "Sletter en arbejdstype. Returnerer 204 ved succes. Kræver Bearer-token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Regions",
+      "description": "CRUD for regioner (Nordjylland, Midtjylland, Sønderjylland, Fyn, Sjælland, Bornholm). OBS: regionRoutes er ikke registreret i index.ts endnu – tilføj app.use('/api', regionRoutes) for at aktivere disse endpoints.",
+      "item": [
+        {
+          "name": "Get All Regions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/regions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "regions"]
+            },
+            "description": "Henter alle regioner. Åbent endpoint."
+          }
+        },
+        {
+          "name": "Get Region By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/regions/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "regions", "1"]
+            },
+            "description": "Henter én region via ID. Åbent endpoint."
+          }
+        },
+        {
+          "name": "Create Region",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "Midtjylland",
+                  "type": "text",
+                  "description": "Regionens navn – skal være unikt. Eksempler: Nordjylland, Midtjylland, Sønderjylland, Fyn, Sjælland, Bornholm"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/regions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "regions"]
+            },
+            "description": "Opretter en ny region. Feltet 'name' skal være unikt. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Update Region",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "Nordjylland",
+                  "type": "text",
+                  "description": "Opdateret regionsnavn (skal forblive unikt)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/regions/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "regions", "1"]
+            },
+            "description": "Opdaterer en region via ID i URL. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Delete Region",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/regions/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "regions", "1"]
+            },
+            "description": "Sletter en region permanent. Returnerer 204 ved succes. Kræver Bearer-token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Articles",
+      "description": "CRUD for nyhedsartikler på platformen. GET-endpoints er åbne. POST/PUT/DELETE kræver Bearer-token.",
+      "item": [
+        {
+          "name": "Get All Articles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/articles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "articles"]
+            },
+            "description": "Henter alle artikler. Åbent endpoint. Returnerer id, createdAt, title, content, author og imageUrl."
+          }
+        },
+        {
+          "name": "Get Article By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/articles/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "articles", "1"]
+            },
+            "description": "Henter én artikel via ID i URL. Returnerer 404 hvis ikke fundet. Åbent endpoint."
+          }
+        },
+        {
+          "name": "Create Article",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "Sådan finder du dit drømmejob i 2026",
+                  "type": "text",
+                  "description": "Artiklens overskrift (påkrævet)"
+                },
+                {
+                  "key": "content",
+                  "value": "I denne artikel gennemgår vi de bedste strategier til at finde et nyt job på det danske arbejdsmarked...",
+                  "type": "text",
+                  "description": "Artiklens brødtekst (påkrævet)"
+                },
+                {
+                  "key": "author",
+                  "value": "Redaktionen, Gratissimo",
+                  "type": "text",
+                  "description": "Forfatterens navn eller redaktionsbetegnelse"
+                },
+                {
+                  "key": "imageUrl",
+                  "value": "https://eksempel.dk/billeder/job-artikel.jpg",
+                  "type": "text",
+                  "description": "URL til forsidebillede (valgfrit)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/articles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "articles"]
+            },
+            "description": "Opretter en ny artikel. Kræver title og content. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Update Article",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "Opdateret: Sådan finder du dit drømmejob i 2026",
+                  "type": "text",
+                  "description": "Opdateret overskrift (påkrævet)"
+                },
+                {
+                  "key": "content",
+                  "value": "Opdateret indhold med nye råd og statistikker fra 2026...",
+                  "type": "text",
+                  "description": "Opdateret brødtekst (påkrævet)"
+                },
+                {
+                  "key": "author",
+                  "value": "Redaktionen, Gratissimo",
+                  "type": "text",
+                  "description": "Forfatter"
+                },
+                {
+                  "key": "imageUrl",
+                  "value": "https://eksempel.dk/billeder/job-artikel-v2.jpg",
+                  "type": "text",
+                  "description": "Opdateret billedurl (valgfrit)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/articles/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "articles", "1"]
+            },
+            "description": "Opdaterer en eksisterende artikel via ID i URL. Returnerer 404 hvis ikke fundet. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Delete Article",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/articles/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "articles", "1"]
+            },
+            "description": "Sletter en artikel permanent. Returnerer 204 ved succes. Kræver Bearer-token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Newsletter Subscribers",
+      "description": "CRUD for nyhedsbrevs-abonnenter. GET-endpoints er åbne. POST/PUT/DELETE kræver Bearer-token.",
+      "item": [
+        {
+          "name": "Get All Subscribers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/newsletter",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "newsletter"]
+            },
+            "description": "Henter alle nyhedsbrevs-abonnenter. Åbent endpoint. Returnerer id og e-mail."
+          }
+        },
+        {
+          "name": "Get Subscriber By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/newsletter/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "newsletter", "1"]
+            },
+            "description": "Henter én abonnent via ID. Returnerer 404 hvis ikke fundet. Åbent endpoint."
+          }
+        },
+        {
+          "name": "Create Subscriber",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "nyhedsbrev@eksempel.dk",
+                  "type": "text",
+                  "description": "Abonnentens e-mailadresse – skal være unik i tabellen"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/newsletter",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "newsletter"]
+            },
+            "description": "Tilmelder en e-mail til nyhedsbrevet. E-mail skal være unik. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Update Subscriber",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "opdateret@eksempel.dk",
+                  "type": "text",
+                  "description": "Ny e-mailadresse for abonnenten (skal forblive unik)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/newsletter/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "newsletter", "1"]
+            },
+            "description": "Opdaterer en abonnents e-mail via ID i URL. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Delete Subscriber",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/newsletter/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "newsletter", "1"]
+            },
+            "description": "Sletter en nyhedsbrevs-abonnent permanent. Returnerer 204 ved succes. Kræver Bearer-token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Job Favorites",
+      "description": "CRUD for en brugers favoritjob. Alle endpoints kræver Bearer-token. OBS: GET all-ruten har en stavefejl i koden (/api/avorites i stedet for /api/favorites) – alle øvrige ruter bruger /api/favorites.",
+      "item": [
+        {
+          "name": "Get All Favorites (OBS: /avorites)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/avorites",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "avorites"]
+            },
+            "description": "Henter alle favoritjob-poster. OBS: Ruten er /api/avorites (mangler 'f') pga. en stavefejl i userJobFavoriteRoutes.ts. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Get Favorite By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/favorites/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "favorites", "1"]
+            },
+            "description": "Henter ét favoritjob via ID. Returnerer 404 hvis ikke fundet. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Create Favorite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "userId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "ID på den bruger der gemmer jobbet som favorit (påkrævet, fremmed nøgle)"
+                },
+                {
+                  "key": "jobListingId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "ID på det jobopslag der gemmes som favorit (påkrævet, fremmed nøgle)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/favorites",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "favorites"]
+            },
+            "description": "Gemmer et jobopslag som favorit for en bruger. Begge ID'er skal eksistere. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Update Favorite",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "userId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "Opdateret bruger-ID"
+                },
+                {
+                  "key": "jobListingId",
+                  "value": "2",
+                  "type": "text",
+                  "description": "Opdateret jobopslags-ID"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/favorites/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "favorites", "1"]
+            },
+            "description": "Opdaterer en favoritpost via ID i URL. Kræver Bearer-token."
+          }
+        },
+        {
+          "name": "Delete Favorite",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Kræver login"
+              }
+            ],
+            "body": { "mode": "none" },
+            "url": {
+              "raw": "{{baseUrl}}/api/favorites/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "favorites", "1"]
+            },
+            "description": "Fjerner et jobopslag fra brugerens favoritter. Returnerer 204 ved succes. Kræver Bearer-token."
+          }
+        }
+      ]
+    }
+  ]
+}

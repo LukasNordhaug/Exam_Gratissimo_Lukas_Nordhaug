@@ -1,0 +1,20 @@
+model JobListing {
+  id              Int               @id @default(autoincrement())
+  createdAt       DateTime          @default(now())
+  description     String
+  title           String
+  address         String
+  zipcode         Int
+  organization    String
+  city            String
+  workHome        String
+  regionId        Int
+  region          Region            @relation(fields: [regionId], references: [id])
+  userId          Int
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobCategoryId   Int
+  jobCategory     JobCategory       @relation(fields: [jobCategoryId], references: [id])
+  favorites       UserJobFavorite[]
+  workType        WorkType     @relation(fields: [workTypeId], references: [id])
+  workTypeId Int
+}
