@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { ApiError, subscribeToNewsletter } from "@/services/api";
 
@@ -94,13 +95,40 @@ export function Footer() {
           <p>kontakt@gratissimo.dk</p>
           <div className="social-links" aria-label="Sociale medier">
             <a href="#linkedin" aria-label="LinkedIn">
-              in
+              <Image
+                src="/icons/SoMe/LinkedIn Circled.png"
+                alt=""
+                width={18}
+                height={18}
+                aria-hidden="true"
+              />
             </a>
             <a href="#facebook" aria-label="Facebook">
-              f
+              <Image
+                src="/icons/SoMe/Facebook.png"
+                alt=""
+                width={18}
+                height={18}
+                aria-hidden="true"
+              />
             </a>
             <a href="#instagram" aria-label="Instagram">
-              ig
+              <Image
+                src="/icons/SoMe/Instagram Circle.png"
+                alt=""
+                width={18}
+                height={18}
+                aria-hidden="true"
+              />
+            </a>
+            <a href="#google-plus" aria-label="Google Plus">
+              <Image
+                src="/icons/SoMe/Google Plus.png"
+                alt=""
+                width={18}
+                height={18}
+                aria-hidden="true"
+              />
             </a>
           </div>
         </div>

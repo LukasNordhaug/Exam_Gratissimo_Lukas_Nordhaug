@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isAuthenticated, logout } from "@/services/api";
@@ -40,13 +41,14 @@ export function Navigation() {
     <nav className="site-nav" aria-label="Hovednavigation">
       <div className="site-nav__brand-row">
         <Link className="brand" href="/" onClick={() => setMenuOpen(false)}>
-          <span className="brand__mark" aria-hidden="true">
-            ♥
-          </span>
-          <span>
-            <strong>Gratissimo</strong>
-            <small>find dit næste frivillige job</small>
-          </span>
+          <Image
+            className="brand__logo"
+            src="/logo/logo-white.png"
+            alt="Gratissimo"
+            width={190}
+            height={50}
+            priority
+          />
         </Link>
 
         <button

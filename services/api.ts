@@ -79,6 +79,20 @@ export const getWorkTypes = () => get<unknown[]>("/api/workTypes");
 export const getArticles = () => get<unknown[]>("/api/articles");
 export const getTestimonies = () => get<unknown[]>("/api/testimony");
 
+export const login = (username: string, password: string) =>
+  apiFetch<{ accessToken: string }>("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+
+export const saveFavorite = (jobListingId: number) =>
+  apiFetch<unknown>("/api/favorites", {
+    method: "POST",
+    auth: true,
+    body: JSON.stringify({ jobListingId }),
+  });
+
 export const subscribeToNewsletter = (data: NewsletterSubscriberInput) =>
   apiFetch<unknown>("/api/newsletter", {
     method: "POST",
