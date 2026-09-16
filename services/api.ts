@@ -27,6 +27,11 @@ const getAccessToken = () => {
 
 export const isAuthenticated = () => Boolean(getAccessToken());
 
+export const getApiAssetUrl = (assetPath: unknown) => {
+  if (typeof assetPath !== "string" || !assetPath) return "";
+  return new URL(assetPath, `${env.apiBaseUrl}/`).toString();
+};
+
 export const logout = async () => {
   if (typeof document !== "undefined") {
     document.cookie = `${ACCESS_TOKEN_COOKIE}=; Max-Age=0; Path=/`;

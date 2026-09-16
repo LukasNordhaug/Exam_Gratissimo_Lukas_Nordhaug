@@ -16,6 +16,30 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Run the API locally
+
+The homepage loads its data from the Express API on `http://localhost:4000`. Start the API in a separate terminal before starting Next.js:
+
+```bash
+cd ../backend/gratissimo-api-sqlite
+npm run generate
+npm run dev
+```
+
+Then, in a second terminal:
+
+```bash
+npm run dev
+```
+
+The frontend reads this URL from `.env.local`:
+
+```text
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
+```
+
+On Windows PowerShell, if `npm` is blocked by the execution policy, use `npm.cmd` in these commands instead.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

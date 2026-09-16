@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { CallToActionHeader } from "@/components/layout/CallToActionHeader";
 import {
+  getApiAssetUrl,
   getArticles,
   getJobCategories,
   getJobListings,
@@ -200,7 +201,10 @@ export function HomePage() {
           <div className="news-grid">
             {articles.map((article, index) => (
               <Link className="news-card" href={`/nyheder/${article.id}`} key={text(article.id, String(index))}>
-                <div className={`news-card__image news-card__image--${index + 1}`} style={article.imageUrl ? { backgroundImage: `url(${text(article.imageUrl)})` } : undefined} />
+                <div
+                  className={`news-card__image news-card__image--${index + 1}`}
+                  style={getApiAssetUrl(article.imageUrl) ? { backgroundImage: `url(${getApiAssetUrl(article.imageUrl)})` } : undefined}
+                />
                 <div className="news-card__body">
                   <small>{text(article.author, "Gratissimo")}</small>
                   <h3>{text(article.title, "Nyhed fra Gratissimo")}</h3>
