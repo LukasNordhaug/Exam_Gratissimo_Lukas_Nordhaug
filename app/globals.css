@@ -92,6 +92,7 @@ input {
 
 .site-nav__menu {
   display: flex;
+  padding: 12px 0;
   height: 100%;
   align-items: center;
   justify-content: space-between;
