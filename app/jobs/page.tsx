@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { JobsResults } from "@/components/jobs/JobsResults";
+import { JobsResults } from "@/app/components/jobs/JobsResults";
 
 export default function JobsPage() {
   return (

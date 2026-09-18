@@ -1,4 +1,4 @@
-import { NewsPage } from "@/components/news/NewsPage";
+import { NewsPage } from "@/app/components/news/NewsPage";
 
 export default function NewsIndexPage() {
   return <NewsPage />;

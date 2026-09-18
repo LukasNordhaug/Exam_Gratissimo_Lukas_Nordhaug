@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CallToActionHeader } from "@/components/layout/CallToActionHeader";
-import { JobSearch, Option } from "@/components/home/JobSearch";
+import { CallToActionHeader } from "@/app/components/layout/CallToActionHeader";
+import { JobSearch, Option } from "@/app/components/home/JobSearch";
 import {
   getApiAssetUrl,
   getArticles,

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { JobSearch, Option } from "@/components/home/JobSearch";
+import { JobSearch, Option } from "@/app/components/home/JobSearch";
 import {
   ApiError,
   deleteFavorite,

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { CallToActionHeader } from "@/components/layout/CallToActionHeader";
+import { CallToActionHeader } from "@/app/components/layout/CallToActionHeader";
 import {
   ApiError,
   createJobListing,

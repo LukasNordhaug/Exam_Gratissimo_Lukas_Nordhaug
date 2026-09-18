@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { ApiError, login, saveAuthTokens } from "@/services/api";
-import { CallToActionHeader } from "@/components/layout/CallToActionHeader";
+import { CallToActionHeader } from "@/app/components/layout/CallToActionHeader";
 
 export default function LoginPage() {
   const router = useRouter();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { NewsPage } from "@/components/news/NewsPage";
+import { NewsPage } from "@/app/components/news/NewsPage";
 
 export default function NewsArticlePage() {
   const params = useParams<{ id: string }>();
