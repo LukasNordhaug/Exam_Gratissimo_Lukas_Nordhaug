@@ -1,5 +1,8 @@
 import { env } from "@/config/env";
-import type { JobListingFilters, NewsletterSubscriberInput } from "@/services/api-types";
+import type {
+  JobListingFilters,
+  NewsletterSubscriberInput,
+} from "@/services/api-types";
 
 const ACCESS_TOKEN_COOKIE = "gratissimo_access_token";
 
@@ -17,12 +20,14 @@ type Options = RequestInit & { auth?: boolean };
 
 const getAccessToken = () => {
   if (typeof document === "undefined") return "";
-  return document.cookie
-    .split("; ")
-    .find((cookie) => cookie.startsWith(`${ACCESS_TOKEN_COOKIE}=`))
-    ?.split("=")
-    .slice(1)
-    .join("=") ?? "";
+  return (
+    document.cookie
+      .split("; ")
+      .find((cookie) => cookie.startsWith(`${ACCESS_TOKEN_COOKIE}=`))
+      ?.split("=")
+      .slice(1)
+      .join("=") ?? ""
+  );
 };
 
 export const isAuthenticated = () => Boolean(getAccessToken());
@@ -46,15 +51,23 @@ export const logout = async () => {
   }
 };
 
-export async function apiFetch<T>(path: string, options: Options = {}): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  options: Options = {},
+): Promise<T> {
   const { auth = false, ...requestOptions } = options;
   const headers = new Headers(requestOptions.headers);
   const token = getAccessToken();
 
-  if (requestOptions.body && typeof requestOptions.body !== "string" && !headers.has("Content-Type")) {
+  if (
+    requestOptions.body &&
+    typeof requestOptions.body !== "string" &&
+    !headers.has("Content-Type")
+  ) {
     headers.set("Content-Type", "application/json");
   }
-  if (auth && token) headers.set("Authorization", `Bearer ${decodeURIComponent(token)}`);
+  if (auth && token)
+    headers.set("Authorization", `Bearer ${decodeURIComponent(token)}`);
 
   const response = await fetch(`${env.apiBaseUrl}${path}`, {
     ...requestOptions,
@@ -87,11 +100,16 @@ export const getWorkTypes = () => get<unknown[]>("/api/workTypes");
 export const getArticles = () => get<unknown[]>("/api/articles");
 export const getTestimonies = () => get<unknown[]>("/api/testimony");
 
-export const getCurrentUser = () => apiFetch<unknown[]>("/api/users", { auth: true });
-export const getFavorites = () => apiFetch<unknown[]>("/api/favorites", { auth: true });
+export const getCurrentUser = () =>
+  apiFetch<unknown[]>("/api/users", { auth: true });
+export const getFavorites = () =>
+  apiFetch<unknown[]>("/api/favorites", { auth: true });
 
 export const deleteFavorite = (favoriteId: number) =>
-  apiFetch<unknown>(`/api/favorites/${favoriteId}`, { method: "DELETE", auth: true });
+  apiFetch<unknown>(`/api/favorites/${favoriteId}`, {
+    method: "DELETE",
+    auth: true,
+  });
 
 export const login = (username: string, password: string) =>
   apiFetch<{ accessToken: string; refreshToken: string }>("/api/login", {
@@ -103,6 +121,14 @@ export const login = (username: string, password: string) =>
 export const register = (data: Record<string, string>) =>
   apiFetch<unknown>("/api/users", {
     method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(data),
+  });
+
+export const createJobListing = (data: Record<string, string>) =>
+  apiFetch<Record<string, unknown>>("/api/job-listings", {
+    method: "POST",
+    auth: true,
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams(data),
   });

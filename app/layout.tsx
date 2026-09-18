@@ -16,7 +16,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="da" className={montserrat.variable}>
-      <body>
+      {/* suppressHydrationWarning: browser extensions inject attributes here before React hydrates */}
+      <body suppressHydrationWarning>
         <SiteLayout>{children}</SiteLayout>
       </body>
     </html>
